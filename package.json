@@ -1,0 +1,15 @@
+{
+    "name": "jaiminho-bot",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "Dione Betanin",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^0.18.0",
+        "telegraf": "^3.21.2"
+    }
+}
