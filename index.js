@@ -1,5 +1,16 @@
 const Telegraf = require('telegraf');
 const axios = require('axios');
+const express = require('express');
+const app = express();
+const port = process.env.APP_PORT || process.env.PORT || 8080;
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.listen(port, () => {
+    console.log(`Listening on port ${port}!`);
+});
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const axiosInstance = axios.create({
@@ -17,11 +28,11 @@ function addConversation(id, name, ctx) {
             id,
             name,
             ctx,
-        });    
+        });
         if (!monitor) {
             alertar = true;
-            monitor = monitorParkingLotation(maxLotation, conversationsPool);                        
-        }        
+            monitor = monitorParkingLotation(maxLotation, conversationsPool);
+        }
         monitor(true);
     }
 }
@@ -51,30 +62,30 @@ function monitorParkingLotation(maxLotation, conversationsAlertPool) {
                 clearInterval(interval);
             } else {
                 axiosInstance.get('/park/lotation')
-                .then(response => {
-                    const vehicles = JSON.parse(response.data).vehicles;
-                    if (alertar && vehicles >= maxLotation) {
-                        broadcastMessage(`Hey [name], o pátio está lotado tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
-                        alertar = false;
-                    } else if (!alertar && vehicles >= maxLotation * 2) {
-                        broadcastMessage(`Hey [name], o pátio está explodindo tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
-                    } else if (!alertar && vehicles < maxLotation) {
-                        broadcastMessage(`Deu uma aliviada no pátio [name], tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
-                        alertar = true;
-                    }
-                })
-                .catch(error => {
-                    try {
-                        if (typeof error === 'string') {
-                            console.log(`Error: ${JSON.parse(error).message}`);
-                        } else {
+                    .then(response => {
+                        const vehicles = JSON.parse(response.data).vehicles;
+                        if (alertar && vehicles >= maxLotation) {
+                            broadcastMessage(`Hey [name], o pátio está lotado tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
+                            alertar = false;
+                        } else if (!alertar && vehicles >= maxLotation * 2) {
+                            broadcastMessage(`Hey [name], o pátio está explodindo tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
+                        } else if (!alertar && vehicles < maxLotation) {
+                            broadcastMessage(`Deu uma aliviada no pátio [name], tem ${vehicles} veículos lá agora!`, conversationsAlertPool);
+                            alertar = true;
+                        }
+                    })
+                    .catch(error => {
+                        try {
+                            if (typeof error === 'string') {
+                                console.log(`Error: ${JSON.parse(error).message}`);
+                            } else {
+                                console.log(`Error: ${error.message}`);
+                            }
+                        } catch (error) {
                             console.log(`Error: ${error.message}`);
                         }
-                    } catch (error) {
-                        console.log(`Error: ${error.message}`);
-                    }
-                    clearInterval(interval);
-                })
+                        clearInterval(interval);
+                    })
             }
         }, timeout);
     }
@@ -84,9 +95,9 @@ function monitorParkingLotation(maxLotation, conversationsAlertPool) {
             monitorLoop();
         } else if (interval) {
             clearInterval(interval);
-        }        
+        }
     }
-    
+
 }
 
 bot.start((ctx) => {
@@ -119,7 +130,7 @@ bot.command('/status', (ctx) => {
                 ctx.reply('Há apenas 1 veículo no pátio no momento');
             } else {
                 ctx.reply(`Tem ${vehicles} veículos no pátio no momento`);
-            }            
+            }
         })
         .catch(error => {
             try {
@@ -130,12 +141,12 @@ bot.command('/status', (ctx) => {
                 }
             } catch (error) {
                 console.log(`Error: ${error.message}`);
-            }            
+            }
             ctx.reply('Prefiro evitar a fadiga, me pergunte mais tarde');
         });
 });
 
-bot.on('text', (ctx) => {    
+bot.on('text', (ctx) => {
     ctx.reply('Preciso estudar para te entender melhor, mas prefiro evitar a fadiga...');
     ctx.reply('Então se quiser saber quantos veículos tem no pátio me mande /status');
     ctx.reply('Se quiser que eu fique de olho no pátio para você, me mande /monitorar');
